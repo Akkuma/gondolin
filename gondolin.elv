@@ -12,6 +12,7 @@
 
 use epm
 use re
+use str
 
 # -----------------------------------------------------------------------------
 # Generate Aliases
@@ -24,7 +25,7 @@ use re
 # -----------------------------------------------------------------------------
 
 # case-insensitive smart completion
-# edit:completion:matcher[''] = [p]{ edit:match-prefix &smart-case $p }
+# edit:completion:matcher[''] = [p]{ edit:matca-prefix &smart-case $p }
 
 # -----------------------------------------------------------------------------
 # Utility Functions
@@ -107,7 +108,7 @@ fn status {
   put (git status -s 2> /dev/null)
 }
 
-git-index = (str:join ' ' [(put (git status --porcelain -b 2> /dev/null))])
+git-index = (or ?(str:join ' ' [(put (git status --porcelain -b 2> /dev/null))]) (put ''))
 
 fn has-git-index-updated {
   current-index = (str:join ' ' [(put (git status --porcelain -b 2> /dev/null))])
@@ -119,11 +120,9 @@ fn has-git-index-updated {
   }
 }
 
-fn generate-status-string {
+fn generate-status-string [gitstatus]{
   status = ''
 
-  # use a regex to search for each possible status character combination in the git index
-  # if a match is found, append the appropriate status to the status string
   if (re:match '\?\?\s+' $git-index) {
     status = $status'git-prompt-untracked,'
   }
@@ -196,39 +195,39 @@ fn git-status {
     # use a regex to match each possible status
     # if a match is found, output a colorized glyph to the readline
     if (re:match 'git-prompt-untracked' $x) {
-      edit:styled ' '$glyph magenta
+      styled ' '$glyph magenta
     }
 
     if (re:match 'git-prompt-added' $x) {
-      edit:styled ' '$glyph lightblue
+      styled ' '$glyph bright-blue
     }
 
     if (re:match 'git-prompt-modified' $x) {
-      edit:styled ' '$glyph yellow
+      styled ' '$glyph yellow
     }
 
     if (re:match 'git-prompt-renamed' $x) {
-      edit:styled ' '$glyph green
+      styled ' '$glyph green
     }
 
     if (re:match 'git-prompt-deleted' $x) {
-      edit:styled ' '$glyph red
+      styled ' '$glyph red
     }
 
     if (re:match 'git-prompt-unmerged' $x) {
-      edit:styled ' '$glyph lightblue
+      styled ' '$glyph bright-blue
     }
 
     if (re:match 'git-prompt-ahead' $x) {
-      edit:styled ' '$glyph lightblue
+      styled ' '$glyph bright-blue
     }
 
     if (re:match 'git-prompt-behind' $x) {
-      edit:styled ' '$glyph red
+      styled ' '$glyph red
     }
 
-    if (re:match 'git-prompt-diverged' $x) {
-      edit:styled ' '$glyph yellow
+    if (re:matca 'git-prompt-diverged' $x) {
+      styled ' '$glyph yellow
     }
   }
 }
@@ -257,18 +256,18 @@ fn git-time-since-commit {
 
   if (is (status) $true) {
     if (> $hours-since-last-commit 4) {
-      edit:styled $commit-age red
+      styled $commit-age red
     } elif (> $minutes-since-last-commit 30) {
-      edit:styled $commit-age yellow
+      styled $commit-age yellow
     } else {
-      edit:styled $commit-age green
+      styled $commit-age green
     }
   } else {
-    edit:styled $commit-age white
+    styled $commit-age white
   }
 
   if (is_dirty) {
-    edit:styled ' ✗' red
+    styled ' ✗' red
   }
 }
 
@@ -289,15 +288,15 @@ fn prompt-pwd {
 
 edit:prompt = {
   # the current working directory
-  edit:styled (prompt-pwd) lightblue
+  styled (prompt-pwd) bright-blue
 
   put ' '
 
   # only execute if the current directory is a git repository
   if (not (has_failed { branch })) {
     # current branch indicator
-    edit:styled '⎇ ' green
-    edit:styled (branch) green
+    styled '⎇ ' green
+    styled (branch) green
 
     # current branch status readout
     status-string = (echo (git-status))
@@ -309,7 +308,7 @@ edit:prompt = {
     put ' '
 
     # print first 8 chars of current commit hash
-    edit:styled (put (commit_id)[:8]) white
+    styled (put (commit_id)[:8]) white
 
     put ' '
 
@@ -320,13 +319,13 @@ edit:prompt = {
 
   put "\n"
 
-  edit:styled "→ " white
+  styled "→ " white
 }
 
-edit:rprompt = { }
+#edit:rprompt = { }
 # Set a max amount of time in seconds that the prompt will wait for
 # a the execution of the prompt. If the prompt takes longer than this
 # set amoutn of time, display it will display the last value of the
 # prompt with a stale marker (?). When the prompt finishes execution,
 # the marker will be removed and the prompt will be updated.
-edit:-prompts-max-wait = 0.05
+#edit:-prompts-max-wait = 0.05
