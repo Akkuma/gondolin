@@ -35,7 +35,7 @@ fn even [int]{
 }
 
 fn floor [x]{
-  @r = (splits . $x)
+  @r = (str:split . $x)
   put $r[0]
 }
 
@@ -107,10 +107,10 @@ fn status {
   put (git status -s 2> /dev/null)
 }
 
-git-index = (joins ' ' [(put (git status --porcelain -b 2> /dev/null))])
+git-index = (str:join ' ' [(put (git status --porcelain -b 2> /dev/null))])
 
 fn has-git-index-updated {
-  current-index = (joins ' ' [(put (git status --porcelain -b 2> /dev/null))])
+  current-index = (str:join ' ' [(put (git status --porcelain -b 2> /dev/null))])
 
   if (not (is $git-index $current-index)) {
     put $true
