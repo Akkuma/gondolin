@@ -108,7 +108,11 @@ fn status {
   put (git status -s 2> /dev/null)
 }
 
-git-index = (or ?(str:join ' ' [(put (git status --porcelain -b 2> /dev/null))]) (put ''))
+#git-index = (or ?(str:join ' ' [(put (git status --porcelain -b 2> /dev/null))]) (put ''))
+git-index = '' 
+try {
+ git-index = (str:join ' ' [(put (git status --porcelain -b 2> /dev/null))])
+} except e { err = $e }
 
 fn has-git-index-updated {
   current-index = (str:join ' ' [(put (git status --porcelain -b 2> /dev/null))])
